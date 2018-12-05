@@ -1,56 +1,45 @@
-import React from 'react';
-import styled from 'styled-components';
-import logo from '../assets/logo.png';
+import React, { Component } from "react";
+import api from "../services/api";
+import { Container, Form } from "../styles/pages/main";
+import CompareList from "../components/CompareList";
+import logo from "../assets/logo.png";
 
-const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 60px;
-`;
+export default class Main extends Component {
+  state = {
+    repositoryInput: "",
+    repositories: []
+  };
 
-const Form = styled.form`
-    margin-top: 20px;
-    width: 100%;
-    max-width: 400px;
-    display: flex;
+  handleAddRepository = async e => {
+    e.preventDefault();
 
-    input {
-        flex: 1;
-        height: 55px;
-        padding: 0 20px;
-        background: #fff;
-        border: 0;
-        font-size: 18px;
-        color: #444;
-        border-radius: 3px;
+    try {
+      const response = await api.get(`/repos/${this.state.repositoryInput}`);
+
+      this.setState({
+        repositoryInput: "",
+        repositories: [...this.state.repositories, response.data]
+      });
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    button {
-        height: 55px;
-        padding: 0 20px;
-        margin-left: 10px;
-        background: #63f5b0;
-        color: #fff;
-        border: 0;
-        font-size: 20px;
-        font-weight: bold;
-        border-radius: 3px;
-
-        &.hover {
-            background: #52d89f;
-        }
-    }
-`;
-
-const Main = () => (
-    <Container>
-        <image src={logo} alt="Github Compare Logo" />
-        <Form>
-            <input type="text" placeholder="user/repository" />
-            <button type="submit">OK</button>
+  render() {
+    return (
+      <Container>
+        <img src={logo} alt="Github Compare Logo" />
+        <Form onSubmit={this.handleAddRepository}>
+          <input
+            type="text"
+            placeholder="user/repository"
+            value={this.state.repositoryInput}
+            onChange={e => this.setState({ repositoryInput: e.target.value })}
+          />
+          <button type="submit">OK</button>
         </Form>
-    </Container>
-);
-
-export default Main;
+        <CompareList repositories={this.state.repositories} />
+      </Container>
+    );
+  }
+}
